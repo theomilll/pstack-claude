@@ -42,6 +42,10 @@ The other skills are situational; the mode skill uses them for you as needed. Ou
 
 Everything else, including the playbook and principle text, is upstream's. See [HARNESS.md](./HARNESS.md) for the full table.
 
+## Versioning
+
+The plugin version (`1.0.0` in `.claude-plugin/plugin.json`) is this port's own line; the upstream version it tracks is stated at the top of this README. Bump the plugin version on every change that should reach installed copies: `claude plugin update pstack@pstack-claude` skips when the number is unchanged.
+
 ## Skills
 
 | skill | for |
