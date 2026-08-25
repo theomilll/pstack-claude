@@ -40,6 +40,9 @@ The discipline ports. The Cursor plugin runtime does not. Install this repo as a
 | Session restart / pickup | Cursor restart, cloud-agent URL | Session end; `claude --resume <session-id>`. Background agents are listed in `/tasks`. |
 | MCP discovery (`why`) | Cursor `mcps/` directory | MCP tools are `mcp__<server>__<tool>`; enumerate with `ToolSearch` or `claude mcp list`. |
 | Benny automations | Cursor Automations pack | Dropped. Claude Code's equivalent is `/schedule` (cloud routines) plus plugin hooks; the pack was Cursor-runtime specific. |
+| Agent store | per-agent store dir named in the system prompt | `~/.claude/pstack/<project-slug>/` ("the store"), created on first use. Plans go under `docs/`, orchestrate state under `orchestrate/`. |
+| `/goal` | Cursor built-in standing objective | None. Playbooks write the objective at the top of the plan file and re-read it on every `/loop` tick. |
+| Plugin files at runtime | `git show origin/main:pstack/skills/...` (plugin vendored in trunk) | `<pstack root>/skills/...`, the installed plugin directory `~/.claude/plugins/cache/pstack-claude/pstack/<version>/`. |
 | Agent frontmatter | `is_background: true` | `background: true`, `model: inherit`, `disallowedTools`. Agent `name` must be lowercase-hyphen (`Comment Sicko` → `comment-sicko`). |
 
 ## Default spawn shape
@@ -64,5 +67,5 @@ Independent verify: a fresh subagent on a different model family from the writer
 2. No line: the skill's inline default.
 3. `inherit-parent` or `auto`: omit `model`.
 4. A Claude alias: pass it as `model`.
-5. `gpt-5.6-sol`: `subagent_type: "codex:codex-rescue"`, no `model`. Roles that need this session's MCP servers (`why`, `reflect`) cannot use it.
+5. `gpt-5.6-sol`: `subagent_type: "codex:codex-rescue"`, no `model`. Roles that need this session's MCP servers (all of `why` and `reflect`) cannot use it.
 6. The `codex` plugin is absent: code roles run on `opus`; panels drop the entry.

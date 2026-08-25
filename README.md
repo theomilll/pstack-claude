@@ -32,7 +32,7 @@ The other skills are situational; the mode skill uses them for you as needed. Ou
 ## What changed from upstream
 
 - `Task` → `Agent`. No `run_in_background` (subagents already run in the background), no `readonly` (use `pstack:read-only`), no `environment: "cloud"` (use `isolation: "worktree"`).
-- Model slugs → Claude Code aliases (`fable`, `opus`, `sonnet`). `gpt-5.6-sol` routes through `codex:codex-rescue`. Grok is gone, so four-model panels are three.
+- Model slugs → Claude Code aliases (`fable`, `opus`, `sonnet`, `haiku`). `gpt-5.6-sol` routes through `codex:codex-rescue`. Grok is gone, so four-model panels are three.
 - `~/.cursor/rules/pstack-models.mdc` → `~/.claude/rules/pstack-models.md`.
 - Cursor's `create-skill`, `cursor-team-kit`'s `deslop` / `control-ui` / `control-cli`, and the built-in babysit skill → the Authoring a skill playbook, `/simplify`, the project's `verify-<app>` skill, and nothing, respectively.
 - Transcript paths → `~/.claude/projects/<slug>/`.

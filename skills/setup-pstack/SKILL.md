@@ -27,7 +27,7 @@ The default role-to-model mapping is the rule shape shown in step 5 below. If `~
 
 Show every role with its current model, marking any value not in the detected set as needing a choice. Ask whether to accept as-is or change specific roles, offering the detected models plus `inherit-parent` and `auto` as the options. Prefer AskUserQuestion over free text. For panel roles (how critics, arena runners, architect runners, interrogate reviewers) the value is a list, and one subagent runs per entry, alias entries included, so the list length sets the count. `arena cross-judge pool` is also a list, but Arena selects one value from it whose model family differs from the parent's when possible. `swarm workers` is the default model for every worker unless a race or comparison assigns another model per arm.
 
-Roles that need this session's MCP servers (`why investigators`, `why synthesizer`, `reflect judgment, divergent, synthesizer`) must be Claude aliases; `codex:codex-rescue` cannot see them. Say so if the user picks `gpt-5.6-sol` there.
+Roles that need this session's MCP servers (`why investigators`, `why synthesizer`, `reflect tooling`, `reflect judgment, divergent, synthesizer`) must be Claude aliases; `codex:codex-rescue` cannot see them. Say so if the user picks `gpt-5.6-sol` there.
 
 ### 4. Validate
 
@@ -51,7 +51,7 @@ how explainer: fable
 how critics: fable, gpt-5.6-sol, opus
 why investigators: opus
 why synthesizer: fable
-reflect tooling: gpt-5.6-sol
+reflect tooling: opus
 reflect judgment, divergent, synthesizer: fable
 arena runners: fable, gpt-5.6-sol, opus
 arena cross-judge pool: fable, gpt-5.6-sol, opus
