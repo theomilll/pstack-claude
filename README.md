@@ -7,7 +7,7 @@ Claude Code port of [poteto](https://x.com/poteto)'s [pstack](https://github.com
 ## Install
 
 ```text
-/plugin marketplace add theomoura/pstack-claude
+/plugin marketplace add theomilll/pstack-claude
 /plugin install pstack@pstack-claude
 ```
 

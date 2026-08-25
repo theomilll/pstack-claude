@@ -5,8 +5,8 @@
   "author": {
     "name": "Lauren Tan (upstream), Théo Moura (Claude Code port)"
   },
-  "homepage": "https://github.com/theomoura/pstack-claude",
-  "repository": "https://github.com/theomoura/pstack-claude",
+  "homepage": "https://github.com/theomilll/pstack-claude",
+  "repository": "https://github.com/theomilll/pstack-claude",
   "license": "MIT",
   "keywords": ["pstack", "poteto-mode", "workflow", "principles", "agent-style", "subagents", "unslop"]
 }

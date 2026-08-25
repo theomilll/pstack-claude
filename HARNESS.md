@@ -14,7 +14,7 @@ The discipline ports. The Cursor plugin runtime does not. Install this repo as a
 |---|---|---|
 | Slash skill / playbook router | `skills/<name>/SKILL.md`, `/name` | Same layout. Invoked as `/pstack:<name>`; the bare `/name` also resolves when no other plugin claims it. Frontmatter kept: `name`, `description`. Dropped: `mode`, `icon`, `color`, `reminder` (Cursor mode metadata) and `disable-model-invocation`, which on Claude Code makes the Skill tool refuse the skill outright and would break every route out of `poteto-mode`. The 21 `principle-*` leaves carry `user-invocable: false` instead: the model loads them, the slash menu hides them. |
 | Mode reminder | `reminder:` frontmatter on `poteto-mode` | `hooks/hooks.json` `SessionStart` (startup, clear, compact) echoes the one-line reminder. Delete the file from the installed copy to opt out. |
-| Plugin install | `/add-plugin pstack` | `/plugin marketplace add theomoura/pstack-claude` then `/plugin install pstack@pstack-claude`. Manifest is `.claude-plugin/plugin.json`; `skills/`, `agents/`, `hooks/` are auto-discovered. |
+| Plugin install | `/add-plugin pstack` | `/plugin marketplace add theomilll/pstack-claude` then `/plugin install pstack@pstack-claude`. Manifest is `.claude-plugin/plugin.json`; `skills/`, `agents/`, `hooks/` are auto-discovered. |
 | Spawn a child | `Task` | `Agent`. Fields: `description`, `prompt`, `subagent_type`, `model`, `isolation`. |
 | Background child | `run_in_background: true` | No field. Subagents run in the background and the parent gets a task notification when one finishes. |
 | Wait for / resume a child | resume | `SendMessage` to the agent id to continue it with its context. A finished agent's report arrives as the notification. |
