@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'pstack: new task? Playbook match or rigor needed -> run /pstack:poteto-mode. Casual turn or user opts out -> do not.'"
+          }
+        ]
+      }
+    ]
+  }
+}
