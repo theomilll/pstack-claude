@@ -37,6 +37,7 @@ The other skills are situational; the mode skill uses them for you as needed. Ou
 - Cursor's `create-skill`, `cursor-team-kit`'s `deslop` / `control-ui` / `control-cli`, and the built-in babysit skill → the Authoring a skill playbook, `/simplify`, the project's `verify-<app>` skill, and nothing, respectively.
 - Transcript paths → `~/.claude/projects/<slug>/`.
 - The `mode:` / `reminder:` frontmatter → a one-line `SessionStart` hook. Delete `hooks/hooks.json` from the installed copy to opt out.
+- `disable-model-invocation: true` removed everywhere. On Claude Code it makes the Skill tool refuse the skill, which would cut every route out of `poteto-mode`. The `principle-*` leaves are `user-invocable: false` instead: hidden from the slash menu, loadable by the model.
 - The Benny automations pack (a Cursor Automations feature) is not shipped.
 
 Everything else, including the playbook and principle text, is upstream's. See [HARNESS.md](./HARNESS.md) for the full table.

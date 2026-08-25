@@ -12,7 +12,7 @@ The discipline ports. The Cursor plugin runtime does not. Install this repo as a
 
 | pstack need | Cursor | Claude Code |
 |---|---|---|
-| Slash skill / playbook router | `skills/<name>/SKILL.md`, `/name` | Same layout. Invoked as `/pstack:<name>`; the bare `/name` also resolves when no other plugin claims it. Frontmatter kept: `name`, `description`, `disable-model-invocation`. Dropped: `mode`, `icon`, `color`, `reminder` (Cursor mode metadata). |
+| Slash skill / playbook router | `skills/<name>/SKILL.md`, `/name` | Same layout. Invoked as `/pstack:<name>`; the bare `/name` also resolves when no other plugin claims it. Frontmatter kept: `name`, `description`. Dropped: `mode`, `icon`, `color`, `reminder` (Cursor mode metadata) and `disable-model-invocation`, which on Claude Code makes the Skill tool refuse the skill outright and would break every route out of `poteto-mode`. The 21 `principle-*` leaves carry `user-invocable: false` instead: the model loads them, the slash menu hides them. |
 | Mode reminder | `reminder:` frontmatter on `poteto-mode` | `hooks/hooks.json` `SessionStart` (startup, clear, compact) echoes the one-line reminder. Delete the file from the installed copy to opt out. |
 | Plugin install | `/add-plugin pstack` | `/plugin marketplace add theomoura/pstack-claude` then `/plugin install pstack@pstack-claude`. Manifest is `.claude-plugin/plugin.json`; `skills/`, `agents/`, `hooks/` are auto-discovered. |
 | Spawn a child | `Task` | `Agent`. Fields: `description`, `prompt`, `subagent_type`, `model`, `isolation`. |
@@ -29,7 +29,7 @@ The discipline ports. The Cursor plugin runtime does not. Install this repo as a
 | Worktree isolation / Cloud agent | `environment: "cloud"`, `cloud_base_branch` | `isolation: "worktree"` for any parallel writer (worktrees live under `.claude/worktrees/`). `isolation: "remote"` exists but is gated per account; pstack never assumes it. Playbooks say "background subagent in its own worktree" where upstream said "cloud agent". |
 | Ask the human | `AskQuestion` | `AskUserQuestion`. |
 | Wake / recurring | Cursor `/loop` | Claude Code `/loop` (same name; omit the interval to self-pace). |
-| Skill authoring | Cursor built-in `create-skill` | No built-in. `playbooks/authoring-a-skill.md` plus the Claude Code skills reference, with `technical-writing` and `unslop` for prose. |
+| Skill authoring | Cursor built-in `create-skill` | No built-in. `playbooks/authoring-a-skill.md` plus the Claude Code skills reference, with `technical-writing` and `unslop` for prose. `plugin-dev:skill-development` (from `claude-plugins-official`) when installed. |
 | Code slop strip | `cursor-team-kit` `/deslop` | Claude Code built-in `/simplify` before commit, `/no-comments` before review. |
 | Drive the real surface | `cursor-team-kit` `control-ui` / `control-cli` | The project's `verify-<app>` skill from `/create-verification-skill`. Without one: CLI in Bash, browser through Claude in Chrome when connected. |
 | Cursor's built-in babysit | routed away from | No equivalent; the clause is dropped. |
