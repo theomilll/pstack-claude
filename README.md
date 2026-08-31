@@ -1,6 +1,6 @@
 # pstack for Claude Code
 
-Claude Code port of [poteto](https://x.com/poteto)'s [pstack](https://github.com/cursor/plugins/tree/main/pstack) (upstream v0.14.3, `cursor/plugins@bdf7aa3`). The 22 playbooks and 21 principles are poteto's. This repository swaps only the harness call layer: Cursor's `Task`, model slugs, rules directory, cloud agents, and team-kit skills become their Claude Code equivalents. The mapping is in [HARNESS.md](./HARNESS.md); the upstream README is preserved at [README-UPSTREAM.md](./README-UPSTREAM.md). MIT, same as upstream.
+Claude Code port of [poteto](https://x.com/poteto)'s [pstack](https://github.com/cursor/plugins/tree/main/pstack) (upstream v0.14.5, `cursor/plugins@6fecddb`). The 22 playbooks and 21 principles are poteto's. This repository swaps only the harness call layer: Cursor's `Task`, model slugs, rules directory, cloud agents, and team-kit skills become their Claude Code equivalents. The mapping is in [HARNESS.md](./HARNESS.md); the upstream README is preserved at [README-UPSTREAM.md](./README-UPSTREAM.md). MIT, same as upstream.
 
 > if you want to go fast, go deep first. pstack helps you write less, but higher quality code. rigorous agent workflows you can parallelize with confidence.
 
@@ -38,13 +38,13 @@ The other skills are situational; the mode skill uses them for you as needed. Ou
 - Transcript paths → `~/.claude/projects/<slug>/`.
 - The `mode:` / `reminder:` frontmatter → a one-line `SessionStart` hook. Delete `hooks/hooks.json` from the installed copy to opt out.
 - `disable-model-invocation: true` removed everywhere. On Claude Code it makes the Skill tool refuse the skill, which would cut every route out of `poteto-mode`. The `principle-*` leaves are `user-invocable: false` instead: hidden from the slash menu, loadable by the model.
-- The Benny automations pack (a Cursor Automations feature) is not shipped.
+- The Benny automations pack and the `make-bot-ui` skill (both Cursor Automations features: webhook routines, sender keys, the Cursor routine panel) are not shipped.
 
 Everything else, including the playbook and principle text, is upstream's. See [HARNESS.md](./HARNESS.md) for the full table.
 
 ## Versioning
 
-The plugin version (`1.0.0` in `.claude-plugin/plugin.json`) is this port's own line; the upstream version it tracks is stated at the top of this README. Bump the plugin version on every change that should reach installed copies: `claude plugin update pstack@pstack-claude` skips when the number is unchanged.
+The plugin version in `.claude-plugin/plugin.json` is this port's own line; the upstream version it tracks is stated at the top of this README. Bump the plugin version on every change that should reach installed copies: `claude plugin update pstack@pstack-claude` skips when the number is unchanged.
 
 ## Skills
 

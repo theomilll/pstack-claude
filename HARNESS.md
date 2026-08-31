@@ -2,7 +2,7 @@
 
 pstack's 22 playbooks and 21 principles stay. Only harness call sites change.
 
-Sources: upstream pstack (`cursor/plugins` `pstack/`, v0.14.3) and the Claude Code docs (`code.claude.com/docs`: plugins, skills, sub-agents, tools reference, memory, hooks). Tool names and fields below are from those docs and from a live Claude Code 2.1.x session, not from Cursor's `Task` schema.
+Sources: upstream pstack (`cursor/plugins` `pstack/`, v0.14.5) and the Claude Code docs (`code.claude.com/docs`: plugins, skills, sub-agents, tools reference, memory, hooks). Tool names and fields below are from those docs and from a live Claude Code 2.1.x session, not from Cursor's `Task` schema.
 
 ## Verdict
 
@@ -40,6 +40,7 @@ The discipline ports. The Cursor plugin runtime does not. Install this repo as a
 | Session restart / pickup | Cursor restart, cloud-agent URL | Session end; `claude --resume <session-id>`. Background agents are listed in `/tasks`. |
 | MCP discovery (`why`) | Cursor `mcps/` directory | MCP tools are `mcp__<server>__<tool>`; enumerate with `ToolSearch` or `claude mcp list`. |
 | Benny automations | Cursor Automations pack | Dropped. Claude Code's equivalent is `/schedule` (cloud routines) plus plugin hooks; the pack was Cursor-runtime specific. |
+| `make-bot-ui` (0.14.5) | `update_state` webhook routine, sender key, `api2.cursor.sh` webhook URL, routine panel | Dropped. Claude Code routines (`RemoteTrigger`) take webhook triggers only from named event sources (e.g. GitHub events), not a generic sender-key POST, so the skill's UI→webhook→bot flow has no equivalent to port. |
 | Agent store | per-agent store dir named in the system prompt | `~/.claude/pstack/<project-slug>/` ("the store"), created on first use. Plans go under `docs/`, orchestrate state under `orchestrate/`. |
 | `/goal` | Cursor built-in standing objective | None. Playbooks write the objective at the top of the plan file and re-read it on every `/loop` tick. |
 | Plugin files at runtime | `git show origin/main:pstack/skills/...` (plugin vendored in trunk) | `<pstack root>/skills/...`, the installed plugin directory `~/.claude/plugins/cache/pstack-claude/pstack/<version>/`. |
