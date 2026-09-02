@@ -1,6 +1,6 @@
 # pstack for Claude Code
 
-Claude Code port of [poteto](https://x.com/poteto)'s [pstack](https://github.com/cursor/plugins/tree/main/pstack) (upstream v0.14.5, `cursor/plugins@6fecddb`). The 22 playbooks and 21 principles are poteto's. This repository swaps only the harness call layer: Cursor's `Task`, model slugs, rules directory, cloud agents, and team-kit skills become their Claude Code equivalents. The mapping is in [HARNESS.md](./HARNESS.md); the upstream README is preserved at [README-UPSTREAM.md](./README-UPSTREAM.md). MIT, same as upstream.
+Claude Code port of [poteto](https://x.com/poteto)'s [pstack](https://github.com/cursor/plugins/tree/main/pstack) (upstream v0.14.7, `cursor/plugins@efa2a53`). The 22 playbooks and 21 principles are poteto's. This repository swaps only the harness call layer: Cursor's `Task`, model slugs, rules directory, cloud agents, and team-kit skills become their Claude Code equivalents. The mapping is in [HARNESS.md](./HARNESS.md); the upstream README is preserved at [README-UPSTREAM.md](./README-UPSTREAM.md). MIT, same as upstream.
 
 > if you want to go fast, go deep first. pstack helps you write less, but higher quality code. rigorous agent workflows you can parallelize with confidence.
 
@@ -27,7 +27,7 @@ Optional, for the `gpt-5.6-sol` roles: the [Codex plugin](https://github.com/ope
 
 New here? The [pstack guide](./docs/guide/README.md) walks you through a first real task. Every `/name` in the guide is `/pstack:name` here; the bare form also works when no other plugin ships a skill with that name.
 
-The other skills are situational; the mode skill uses them for you as needed. Out of the box the mode splits work by model strength: precisely specified and mechanical code goes to `gpt-5.6-sol` through Codex, prose and judgment go to `fable`, and the review panels are `fable` / `gpt-5.6-sol` / `opus`. `/pstack:setup-pstack` changes any of it.
+The other skills are situational; the mode skill uses them for you as needed. Out of the box the mode splits work by model strength: precisely specified code, prose, and judgment go to `fable`, while fast mechanical code goes to `gpt-5.6-sol` through Codex, and the review panels are `fable` / `gpt-5.6-sol` / `opus`. `/pstack:setup-pstack` changes any of it.
 
 ## What changed from upstream
 
@@ -39,6 +39,7 @@ The other skills are situational; the mode skill uses them for you as needed. Ou
 - The `mode:` / `reminder:` frontmatter → a one-line `SessionStart` hook. Delete `hooks/hooks.json` from the installed copy to opt out.
 - `disable-model-invocation: true` removed everywhere. On Claude Code it makes the Skill tool refuse the skill, which would cut every route out of `poteto-mode`. The `principle-*` leaves are `user-invocable: false` instead: hidden from the slash menu, loadable by the model.
 - The Benny automations pack and the `make-bot-ui` skill (both Cursor Automations features: webhook routines, sender keys, the Cursor routine panel) are not shipped.
+- The upstream plugin logo (`assets/logo.png` / `logo` in the Cursor manifest) is not shipped. Claude Code `plugin.json` has no logo field.
 
 Everything else, including the playbook and principle text, is upstream's. See [HARNESS.md](./HARNESS.md) for the full table.
 

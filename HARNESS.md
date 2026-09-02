@@ -2,7 +2,7 @@
 
 pstack's 22 playbooks and 21 principles stay. Only harness call sites change.
 
-Sources: upstream pstack (`cursor/plugins` `pstack/`, v0.14.5) and the Claude Code docs (`code.claude.com/docs`: plugins, skills, sub-agents, tools reference, memory, hooks). Tool names and fields below are from those docs and from a live Claude Code 2.1.x session, not from Cursor's `Task` schema.
+Sources: upstream pstack (`cursor/plugins` `pstack/`, v0.14.7) and the Claude Code docs (`code.claude.com/docs`: plugins, skills, sub-agents, tools reference, memory, hooks). Tool names and fields below are from those docs and from a live Claude Code 2.1.x session, not from Cursor's `Task` schema.
 
 ## Verdict
 
@@ -12,7 +12,7 @@ The discipline ports. The Cursor plugin runtime does not. Install this repo as a
 
 | pstack need | Cursor | Claude Code |
 |---|---|---|
-| Slash skill / playbook router | `skills/<name>/SKILL.md`, `/name` | Same layout. Invoked as `/pstack:<name>`; the bare `/name` also resolves when no other plugin claims it. Frontmatter kept: `name`, `description`. Dropped: `mode`, `icon`, `color`, `reminder` (Cursor mode metadata) and `disable-model-invocation`, which on Claude Code makes the Skill tool refuse the skill outright and would break every route out of `poteto-mode`. The 21 `principle-*` leaves carry `user-invocable: false` instead: the model loads them, the slash menu hides them. |
+| Slash skill / playbook router | `skills/<name>/SKILL.md`, `/name` | Same layout. Invoked as `/pstack:<name>`; the bare `/name` also resolves when no other plugin claims it. Frontmatter kept: `name`, `description`, `paths` (file-scoped auto-activation; same field on Claude Code). Dropped: `mode`, `icon`, `color`, `reminder` (Cursor mode metadata) and `disable-model-invocation`, which on Claude Code makes the Skill tool refuse the skill outright and would break every route out of `poteto-mode`. The 21 `principle-*` leaves carry `user-invocable: false` instead: the model loads them, the slash menu hides them. |
 | Mode reminder | `reminder:` frontmatter on `poteto-mode` | `hooks/hooks.json` `SessionStart` (startup, clear, compact) echoes the one-line reminder. Delete the file from the installed copy to opt out. |
 | Plugin install | `/add-plugin pstack` | `/plugin marketplace add theomilll/pstack-claude` then `/plugin install pstack@pstack-claude`. Manifest is `.claude-plugin/plugin.json`; `skills/`, `agents/`, `hooks/` are auto-discovered. |
 | Spawn a child | `Task` | `Agent`. Fields: `description`, `prompt`, `subagent_type`, `model`, `isolation`. |
@@ -21,7 +21,7 @@ The discipline ports. The Cursor plugin runtime does not. Install this repo as a
 | Child type | `subagent_type: generalPurpose` | `general-purpose`. Plugin agents are `pstack:poteto-agent`, `pstack:comment-sicko`, `pstack:read-only`. Built-ins also include `Explore` and `Plan`. |
 | Read-only child | `readonly: true` (also strips MCP) | `subagent_type: "pstack:read-only"`. Its frontmatter removes `Edit`, `Write`, `NotebookEdit`; MCP access stays. Skills that avoided readonly only to keep MCP now use it. |
 | Agent mode child | `readonly: false` | `general-purpose` or `pstack:poteto-agent`. |
-| Per-spawn model | Cursor slugs (`claude-fable-5-thinking-max`, …) | `model: fable \| opus \| sonnet \| haiku` on `Agent`. Omit to inherit the parent. |
+| Per-spawn model | Cursor slugs (`claude-fable-5-thinking-max`, `claude-fable-5-1-thinking-max`, …) | `model: fable \| opus \| sonnet \| haiku` on `Agent`. Omit to inherit the parent. Fable 5 and Fable 5.1 both map to `fable`. |
 | GPT model | `gpt-5.6-sol-max` | `gpt-5.6-sol` is not an Agent model. Route the role through `subagent_type: "codex:codex-rescue"` (the `codex@openai-codex` plugin) with no `model`; say "read-only" in the prompt when the role must not write. Without that plugin, run code roles on `opus` and drop `gpt-5.6-sol` from panels. From Bash, `codex exec` (`-s read-only` for investigation) is the same runtime. |
 | Grok model | `grok-4.6-fast-xhigh` | Not available. Panels shrink from four to three (`fable`, `gpt-5.6-sol`, `opus`); fast code roles default to `gpt-5.6-sol`. |
 | Per-role model config | `~/.cursor/rules/pstack-models.mdc`, `alwaysApply: true` | `~/.claude/rules/pstack-models.md`. Rule files without `paths` load into every session. Written by `/setup-pstack`. |
@@ -34,13 +34,14 @@ The discipline ports. The Cursor plugin runtime does not. Install this repo as a
 | Drive the real surface | `cursor-team-kit` `control-ui` / `control-cli` | The project's `verify-<app>` skill from `/create-verification-skill`. Without one: CLI in Bash, browser through Claude in Chrome when connected. |
 | Cursor's built-in babysit | routed away from | No equivalent; the clause is dropped. |
 | Bugbot | Bugbot | Wording kept. Claude Code's `/security-review` is the closest built-in reviewer. |
-| Graphite `gt` | `gt` | Unchanged. Optional if `gt` is on PATH; otherwise `gh` + git. |
+| PR forge | Graphite `gt`, GitHub `gh`, Origin `origin pr` | Unchanged CLIs. Playbooks default to `gh`; use `origin` when it can resolve the repo; never require `gt`. |
 | Skill directories | `.cursor/skills/`, `~/.cursor/skills/`, `~/.cursor/plugins/` | `.claude/skills/`, `~/.claude/skills/`, `~/.claude/plugins/cache/`. |
 | Transcripts | `~/.cursor/projects/<slug>/agent-transcripts/<id>/<id>.jsonl` | `~/.claude/projects/<slug>/<session-id>.jsonl`; subagents at `<slug>/<session-id>/subagents/agent-<id>.jsonl`. `<slug>` is the working directory with every `/` turned into `-`, leading dash kept (`/Users/you/proj` → `-Users-you-proj`). Stay inside the active slug. |
 | Session restart / pickup | Cursor restart, cloud-agent URL | Session end; `claude --resume <session-id>`. Background agents are listed in `/tasks`. |
 | MCP discovery (`why`) | Cursor `mcps/` directory | MCP tools are `mcp__<server>__<tool>`; enumerate with `ToolSearch` or `claude mcp list`. |
 | Benny automations | Cursor Automations pack | Dropped. Claude Code's equivalent is `/schedule` (cloud routines) plus plugin hooks; the pack was Cursor-runtime specific. |
 | `make-bot-ui` (0.14.5) | `update_state` webhook routine, sender key, `api2.cursor.sh` webhook URL, routine panel | Dropped. Claude Code routines (`RemoteTrigger`) take webhook triggers only from named event sources (e.g. GitHub events), not a generic sender-key POST, so the skill's UI→webhook→bot flow has no equivalent to port. |
+| Plugin logo (0.14.7) | `logo: "assets/logo.png"` in `.cursor-plugin/plugin.json` | Dropped. Claude Code `plugin.json` has no `logo` field. |
 | Agent store | per-agent store dir named in the system prompt | `~/.claude/pstack/<project-slug>/` ("the store"), created on first use. Plans go under `docs/`, orchestrate state under `orchestrate/`. |
 | `/goal` | Cursor built-in standing objective | None. Playbooks write the objective at the top of the plan file and re-read it on every `/loop` tick. |
 | Plugin files at runtime | `git show origin/main:pstack/skills/...` (plugin vendored in trunk) | `<pstack root>/skills/...`, the installed plugin directory `~/.claude/plugins/cache/pstack-claude/pstack/<version>/`. |
@@ -70,3 +71,8 @@ Independent verify: a fresh subagent on a different model family from the writer
 4. A Claude alias: pass it as `model`.
 5. `gpt-5.6-sol`: `subagent_type: "codex:codex-rescue"`, no `model`. Roles that need this session's MCP servers (all of `why` and `reflect`) cannot use it.
 6. The `codex` plugin is absent: code roles run on `opus`; panels drop the entry.
+
+## Pending upstream mappings
+
+- `73f8be4` `skills/{how,why,unslop,typescript-best-practices,make-bot-ui}/SKILL.md`: `disable-model-invocation: true`. Not carried. On Claude Code it makes the Skill tool refuse the skill and would break poteto-mode routes. `make-bot-ui` is not shipped. Retained: the four shipped skills stay user-invocable and model-invocable.
+- `efa2a53` `pstack/.cursor-plugin/plugin.json` `logo` / `pstack/assets/logo.png`: Claude Code `plugin.json` has no `logo` field. Not shipped. No asset included.

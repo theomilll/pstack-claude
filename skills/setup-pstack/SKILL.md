@@ -41,9 +41,9 @@ Write `~/.claude/rules/pstack-models.md` with one line per role, using the same 
 # pstack model configuration. One line per role. Delete a line to fall back to the skill default.
 # Values: a Claude alias (fable, opus, sonnet, haiku) goes in the Agent `model` field; `gpt-5.6-sol` runs as `subagent_type: "codex:codex-rescue"` with no `model`; `inherit-parent` or `auto` runs the role on the parent session model (omit Agent `model`). Alias entries in a panel list still count toward its fan-out.
 feature, refactoring: gpt-5.6-sol
-bug-fix: gpt-5.6-sol
-perf-issue: gpt-5.6-sol
-hillclimb: gpt-5.6-sol
+bug-fix: fable
+perf-issue: fable
+hillclimb: fable
 judgment and prose: fable
 hardest tasks: fable
 how explorer: gpt-5.6-sol
