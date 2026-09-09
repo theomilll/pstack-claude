@@ -1,0 +1,31 @@
+# OS and editor files
+.DS_Store
+.idea/
+.vscode/
+
+# Dependencies and generated output
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+*.log
+
+# Local Codex and pstack state
+.codex/
+.claude/
+.cursor/
+.pstack/
+.audit/
+decisions.tsv
+
+# Environment files and credentials
+.env
+.env.*
+!.env.example
+.envrc
+*.local
+*.key
+*.pem
+*.p12
+*.pfx
+credentials.json

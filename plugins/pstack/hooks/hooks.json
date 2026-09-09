@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "printf '%s\\n' 'pstack: for non-trivial work, invoke the pstack:poteto-mode skill unless the user opts out.'"
+          }
+        ]
+      }
+    ]
+  }
+}
