@@ -1,6 +1,6 @@
 # pstack for Claude Code
 
-Claude Code port of [poteto](https://x.com/poteto)'s [pstack](https://github.com/cursor/plugins/tree/main/pstack) (upstream v0.14.7, `cursor/plugins@efa2a53`). The 22 playbooks and 21 principles are poteto's. This repository swaps only the harness call layer: Cursor's `Task`, model slugs, rules directory, cloud agents, and team-kit skills become their Claude Code equivalents. The mapping is in [HARNESS.md](./HARNESS.md); the upstream README is preserved at [README-UPSTREAM.md](./README-UPSTREAM.md). MIT, same as upstream.
+Claude Code port of [poteto](https://x.com/poteto)'s [pstack](https://github.com/cursor/plugins/tree/main/pstack) (upstream v0.15.0, `cursor/plugins@71ed0d1`). The 23 playbooks and 23 principles are poteto's. This repository swaps only the harness call layer: Cursor's `Task`, model slugs, rules directory, cloud agents, and team-kit skills become their Claude Code equivalents. The mapping is in [HARNESS.md](./HARNESS.md); the upstream README is preserved at [README-UPSTREAM.md](./README-UPSTREAM.md). MIT, same as upstream.
 
 > if you want to go fast, go deep first. pstack helps you write less, but higher quality code. rigorous agent workflows you can parallelize with confidence.
 
@@ -57,6 +57,6 @@ The plugin version in `.claude-plugin/plugin.json` is this port's own line; the 
 | `tdd`, `no-comments`, `unslop`, `technical-writing`, `typescript-best-practices` | build and clean it. |
 | `create-verification-skill`, `maintain-verification-skill`, `show-me-your-work` | prove it. |
 | `figure-it-out`, `reflect`, `automate-me`, `setup-pstack`, `bro` | the rest. |
-| `principle-*` | the 21 principles, one leaf skill each. |
+| `principle-*` | the 23 principles, one leaf skill each. |
 
 Agents: `poteto-agent` (routing target for the mode), `read-only` (panels and explorers), `comment-sicko` (`/no-comments`).

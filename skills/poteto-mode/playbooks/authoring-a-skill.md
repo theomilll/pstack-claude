@@ -1,12 +1,12 @@
 ### Authoring or modifying a skill
 
-**You own the skill's voice.** Agent-facing prose has a higher bar than human prose; unhelpful sentences become instructions.
+**You own the skill's voice.**
 
-1. Write the `SKILL.md` per the Claude Code skills reference (https://code.claude.com/docs/en/skills): `name` matches the directory, `description` says what it does and when to use it, `user-invocable: false` for reference material the model loads but nobody types, `disable-model-invocation: true` only for a skill nothing else routes to (on Claude Code it makes the Skill tool refuse the skill, so never put it on a skill another skill invokes). Sibling files (`references/`, `playbooks/`) resolve relative to the skill directory. Prose follows the **technical-writing** and **unslop** skills. When the `plugin-dev:skill-development` skill is installed, run it for the draft / test / iterate loop.
+1. Use `playbooks/authoring-a-skill.md`.
 2. Validate the skill: frontmatter has `name` and `description`, referenced files exist, cross-skill links resolve.
-3. Test cases if structural; skip if subjective.
+3. Test cases if structural. Skip if subjective.
 4. Run **Opening a PR**.
 
-When in doubt, delete; prose earns its keep by changing a decision. Tell it to do the thing and skip the reason. Explain only when the rule is confusing without one. Match tone to scope. Point at structural sources (types, READMEs, config); hardcoded details go stale (the **encode-lessons-in-structure** principle skill). Delegate to other skills by path; don't restate. A workflow you keep hitting but isn't captured → propose a new skill.
+When in doubt, delete. Keep only prose that changes a decision. Tell it to do the thing and skip the reason. Explain only when the rule is confusing without one. Match tone to scope. Point at structural sources (types, READMEs, config) per the **encode-lessons-in-structure** principle skill. Delegate to other skills by path. Don't restate. A workflow you keep hitting but isn't captured → propose a new skill.
 
 **Reply:** summary of the skill, key design decisions, validation notes.

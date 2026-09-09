@@ -1,8 +1,8 @@
 # Claude Code harness
 
-pstack's 22 playbooks and 21 principles stay. Only harness call sites change.
+pstack's 23 playbooks and 23 principles stay. Only harness call sites change.
 
-Sources: upstream pstack (`cursor/plugins` `pstack/`, v0.14.7) and the Claude Code docs (`code.claude.com/docs`: plugins, skills, sub-agents, tools reference, memory, hooks). Tool names and fields below are from those docs and from a live Claude Code 2.1.x session, not from Cursor's `Task` schema.
+Sources: upstream pstack (`cursor/plugins` `pstack/`, v0.15.0) and the Claude Code docs (`code.claude.com/docs`: plugins, skills, sub-agents, tools reference, memory, hooks). Tool names and fields below are from those docs and from a live Claude Code 2.1.x session, not from Cursor's `Task` schema.
 
 ## Verdict
 
@@ -12,7 +12,7 @@ The discipline ports. The Cursor plugin runtime does not. Install this repo as a
 
 | pstack need | Cursor | Claude Code |
 |---|---|---|
-| Slash skill / playbook router | `skills/<name>/SKILL.md`, `/name` | Same layout. Invoked as `/pstack:<name>`; the bare `/name` also resolves when no other plugin claims it. Frontmatter kept: `name`, `description`, `paths` (file-scoped auto-activation; same field on Claude Code). Dropped: `mode`, `icon`, `color`, `reminder` (Cursor mode metadata) and `disable-model-invocation`, which on Claude Code makes the Skill tool refuse the skill outright and would break every route out of `poteto-mode`. The 21 `principle-*` leaves carry `user-invocable: false` instead: the model loads them, the slash menu hides them. |
+| Slash skill / playbook router | `skills/<name>/SKILL.md`, `/name` | Same layout. Invoked as `/pstack:<name>`; the bare `/name` also resolves when no other plugin claims it. Frontmatter kept: `name`, `description`, `paths` (file-scoped auto-activation; same field on Claude Code). Dropped: `mode`, `icon`, `color`, `reminder` (Cursor mode metadata) and `disable-model-invocation`, which on Claude Code makes the Skill tool refuse the skill outright and would break every route out of `poteto-mode`. The 23 `principle-*` leaves carry `user-invocable: false` instead: the model loads them, the slash menu hides them. |
 | Mode reminder | `reminder:` frontmatter on `poteto-mode` | `hooks/hooks.json` `SessionStart` (startup, clear, compact) echoes the one-line reminder. Delete the file from the installed copy to opt out. |
 | Plugin install | `/add-plugin pstack` | `/plugin marketplace add theomilll/pstack-claude` then `/plugin install pstack@pstack-claude`. Manifest is `.claude-plugin/plugin.json`; `skills/`, `agents/`, `hooks/` are auto-discovered. |
 | Spawn a child | `Task` | `Agent`. Fields: `description`, `prompt`, `subagent_type`, `model`, `isolation`. |
@@ -75,4 +75,4 @@ Independent verify: a fresh subagent on a different model family from the writer
 ## Pending upstream mappings
 
 - `73f8be4` `skills/{how,why,unslop,typescript-best-practices,make-bot-ui}/SKILL.md`: `disable-model-invocation: true`. Not carried. On Claude Code it makes the Skill tool refuse the skill and would break poteto-mode routes. `make-bot-ui` is not shipped. Retained: the four shipped skills stay user-invocable and model-invocable.
-- `efa2a53` `pstack/.cursor-plugin/plugin.json` `logo` / `pstack/assets/logo.png`: Claude Code `plugin.json` has no `logo` field. Not shipped. No asset included.
+- `efa2a53` / `7314f72` `pstack/.cursor-plugin/plugin.json` `logo` / `pstack/assets/logo.png`: Claude Code `plugin.json` has no `logo` field. Not shipped. 0.14.8 only shrunk the asset. No asset included.
