@@ -1,6 +1,7 @@
 ---
 name: interrogate
 description: "Use for \"interrogate\", \"adversarial review\", \"challenge this\", \"stress test this code\", \"find blind spots\", or \"tear this apart\". Multiple independent reviewers challenge changes from complementary angles."
+disable-model-invocation: true
 ---
 
 # Interrogate

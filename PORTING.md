@@ -20,8 +20,9 @@ contained:
 - one startup hook, one Codex manifest, one logo, one `agents/openai.yaml`
 
 The Claude Code distribution preserves the skills, playbooks, principles,
-guide, hook intent, and helpers. It drops the Codex manifest, the logo, and
-`agents/openai.yaml`. It adds one agent definition and one Claude manifest.
+guide, and helpers. It drops the Codex manifest, the logo,
+`agents/openai.yaml`, and the startup hook. It adds one agent definition and
+one Claude manifest.
 
 ## Package shape
 
@@ -32,14 +33,13 @@ The repository is a Claude Code marketplace with one plugin:
 plugins/pstack/
   .claude-plugin/plugin.json
   agents/read-only.md
-  hooks/hooks.json
   skills/
   docs/guide/
   HARNESS.md
 scripts/
 ```
 
-Claude Code discovers `skills/`, `agents/`, and `hooks/hooks.json` from the
+Claude Code discovers `skills/` and `agents/` from the
 plugin root without manifest fields. The manifest carries identity only.
 
 ## Runtime mapping
@@ -77,12 +77,15 @@ upstream behavior:
 
 Two Claude-specific frontmatter choices are new:
 
-- `unslop` carries `disable-model-invocation: true`, the direct equivalent of
-  the Codex port's explicit-only policy. Skills that apply its rules read
-  `../unslop/SKILL.md` instead of invoking it.
-- The 23 `principle-*` leaves carry `user-invocable: false`. The guide says you
-  steer with their names rather than invoking them, so the slash menu hides
-  them and the model still loads them.
+- Every skill carries `disable-model-invocation: true`, the direct equivalent
+  of the Codex port's explicit-only policy and what upstream ships. Claude
+  Code blocks the Skill tool on such a skill even when another skill asks for
+  it, so a skill that routes to a sibling reads
+  `${CLAUDE_PLUGIN_ROOT}/skills/<name>/SKILL.md` instead. The startup hook
+  that asked for `poteto-mode` is gone with it.
+- The 23 `principle-*` leaves also carry `user-invocable: false`. The guide
+  says you steer with their names rather than invoking them, so the slash
+  menu hides them and `poteto-mode` reads them from disk.
 
 The plugin installs exactly one agent, `read-only`. It pins no model and no
 effort. The Codex port rejected custom agents because Codex presets carry
@@ -96,7 +99,7 @@ are remote PR data, not a local runtime dependency.
 ## Acceptance checks
 
 `scripts/verify-port.sh` checks the marketplace entry, the plugin manifest,
-the hook, the agent, all 46 skill manifests, the 23 playbooks, the 23
+the agent, all 46 skill manifests and their explicit-only flags, the 23 playbooks, the 23
 principles, guide and helper counts, forbidden Codex and legacy contracts, the
 shell helper, Bun tests, and TypeScript types. It runs
 `claude plugin validate` on the marketplace and the plugin when the CLI is

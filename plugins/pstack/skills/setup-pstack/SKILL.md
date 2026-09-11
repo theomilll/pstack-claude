@@ -1,6 +1,7 @@
 ---
 name: setup-pstack
 description: Check pstack skill discovery and the tools needed for a project's workflow. Use for `/pstack:setup-pstack`, "configure pstack", or troubleshooting pstack readiness in Claude Code.
+disable-model-invocation: true
 ---
 
 # Setup pstack
@@ -11,10 +12,11 @@ request role assignments, or change Claude Code settings.
 
 ## Check readiness
 
-1. Confirm that `pstack:poteto-mode` and the skills relevant to the user's
-   task appear in the available skills. If they are missing, report which
-   skills are missing and check the plugin's installation with
-   `claude plugin list` in Bash or `/plugin` in the session. Do not claim the
+1. Confirm the plugin is installed and its skills are on disk. pstack skills
+   are explicit-only, so they never appear in the model's skill list; the
+   files are the evidence. Run `claude plugin list` in Bash and
+   `ls -d ~/.claude/plugins/cache/pstack-claude/pstack/*/skills/*/SKILL.md`.
+   If either fails, report it and point at `/plugin`. Do not claim the
    plugin is ready merely because this file is readable. After an install or
    update, a new session may be needed to load the changed skills.
 2. Inspect the project's instructions and existing verification entry points.

@@ -41,8 +41,8 @@ skill.
 
 New here? The [guide](./plugins/pstack/docs/guide/README.md) walks through a
 first real task. Every `/pstack:name` in the guide is a Claude Code skill.
-Claude also picks the skills implicitly when your request matches their
-descriptions.
+Every skill is explicit-only. Claude never picks one from its description;
+you type it, and the skill you typed loads the others it needs from disk.
 
 pstack inherits the model and effort selected in Claude Code. It does not
 choose models, assign execution settings by role, check model availability, or
@@ -54,7 +54,7 @@ not override it.
 
 - Codex's native subagent tools become the `Agent` tool. Read-only lanes run
   as `pstack:read-only`, the one agent this plugin installs. Writing lanes run
-  as `general-purpose` and invoke `/pstack:poteto-mode` first.
+  as `general-purpose` and read `poteto-mode`'s `SKILL.md` first.
 - Coordinator-created worktrees become `isolation: "worktree"` on the spawn.
 - `.codex-plugin/` becomes `.claude-plugin/`. The repo is a marketplace with
   one plugin at `plugins/pstack/`.
@@ -66,10 +66,13 @@ not override it.
   partitions transcripts by project, so `recall`, `automate-me`, and the
   worktree audit mine the active project's history again, as upstream does.
 - The deliberate simplification pass becomes the built-in `/simplify`.
-- `agents/openai.yaml` on `unslop` becomes `disable-model-invocation: true`.
-- The 23 `principle-*` leaves are `user-invocable: false`: hidden from the
-  slash menu, loadable by the model. `typescript-best-practices` gets its
-  upstream `paths` scope back.
+- `agents/openai.yaml` on every skill becomes `disable-model-invocation: true`.
+  Claude Code blocks the Skill tool on such a skill even from inside another
+  skill, so routes between skills are file reads.
+- The 23 `principle-*` leaves are also `user-invocable: false`: hidden from
+  the slash menu, read from disk by `poteto-mode`.
+- The startup reminder hook is gone. Nothing could act on it.
+- `typescript-best-practices` gets its upstream `paths` scope back.
 - The plugin logo is not shipped. Claude Code manifests have no logo field.
 
 Everything else, including the playbook and principle content, is preserved as
@@ -85,6 +88,9 @@ Run the complete local verification with:
 ```
 
 ## Versioning
+
+Version 2.1.0 makes every skill explicit-only and removes the startup hook.
+Claude no longer invokes a pstack skill on its own.
 
 Version 2.0.0 replaces the earlier Claude port, which routed roles to named
 models. This line tracks upstream 0.15.0 through the Codex port and ships no

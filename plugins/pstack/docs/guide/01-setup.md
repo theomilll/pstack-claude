@@ -12,7 +12,7 @@ In a Claude Code session, run:
 /plugin install pstack@pstack-claude
 ```
 
-Claude Code confirms the plugin is installed. Skills invoke explicitly as `/pstack:poteto-mode`. The bare `/poteto-mode` also resolves when no other plugin ships a skill with that name. The slash form is only needed when you want to force a specific skill instead of letting Claude pick it from the description.
+Claude Code confirms the plugin is installed. Skills invoke explicitly as `/pstack:poteto-mode`. The bare `/poteto-mode` also resolves when no other plugin ships a skill with that name. Every pstack skill is explicit-only. Claude never picks one from its description, so the slash form is how a skill starts. Once you invoke one, it loads the others it needs from disk.
 
 ## Optionally check readiness
 

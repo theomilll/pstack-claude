@@ -1,11 +1,14 @@
 ---
 name: technical-writing
 description: "Layered technical-writing standard: Diátaxis structure, Google developer style sentences, STE instruction rules, Global English syntax. Use for /pstack:technical-writing or when writing or reviewing docs, RFCs, readmes, PR descriptions, or commit messages."
+disable-model-invocation: true
 ---
 
 # Technical writing
 
 The goal is writing a tired engineer understands on the first read. Four layers get you there, one question each: what kind of document is this, how do sentences address the reader, how much does each sentence carry, and can any sentence be read two ways. Apply all four.
+
+Sibling skills load from disk. pstack skills are explicit-only, so when this skill names another one, open `${CLAUDE_PLUGIN_ROOT}/skills/<name>/SKILL.md` and follow it.
 
 Three rules sit above the layers:
 

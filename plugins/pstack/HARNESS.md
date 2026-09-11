@@ -19,13 +19,13 @@ distribution. Children inherit the session's model and effort.
 
 | pstack need | Codex port | Claude Code |
 |---|---|---|
-| Skill router | `$<name>` | `/pstack:<name>`. The bare `/<name>` also resolves when no other plugin claims it. Claude also picks skills from `description`. |
+| Skill router | `$<name>` | `/pstack:<name>`, typed by the user. The bare `/<name>` also resolves when no other plugin claims it. Every skill is `disable-model-invocation: true`, so Claude never picks one from its description and the Skill tool is blocked on them. A skill that routes to a sibling reads `${CLAUDE_PLUGIN_ROOT}/skills/<name>/SKILL.md`. |
 | Plugin install | `codex plugin marketplace add`, `codex plugin add` | `/plugin marketplace add theomilll/pstack-claude` then `/plugin install pstack@pstack-claude`. |
 | Plugin manifest | `.codex-plugin/plugin.json` | `.claude-plugin/plugin.json`. This repo is a marketplace root (`.claude-plugin/marketplace.json`); the installed plugin lives at `plugins/pstack/`. |
-| Startup reminder | `hooks/hooks.json` `SessionStart` | Same file, same matcher (`startup|resume|clear|compact`). Hook stdout lands in context. Delete the file from the installed copy to opt out. |
+| Startup reminder | `hooks/hooks.json` `SessionStart` | Not shipped. Explicit-only skills cannot honor a reminder to invoke `poteto-mode`; the user types it. |
 | Spawn a child | `spawn_agent` | `Agent` with `description`, `prompt`, `subagent_type`, and optionally `isolation`. Omit `model`. |
 | Read-only child | No-edit brief | `subagent_type: "pstack:read-only"`, the one agent this plugin installs. It drops `Edit`, `Write`, and `NotebookEdit` and keeps MCP. |
-| Writing child | Normal subagent told to use `$poteto-mode` | `general-purpose`, told to invoke `/pstack:poteto-mode` or the routed skill first. |
+| Writing child | Normal subagent told to use `$poteto-mode` | `general-purpose`, told to read `${CLAUDE_PLUGIN_ROOT}/skills/poteto-mode/SKILL.md` or the routed skill's file first. |
 | Resume or steer a child | `followup_task`, `send_message`, `list_agents`, `interrupt_agent`, `wait_agent` | `SendMessage` to continue, `ListAgents` to inspect, `TaskStop` to stop. Completion arrives as a task notification; `/tasks` lists background work. |
 | Execution settings | Inherit the Codex model and reasoning effort | Inherit the session's model and effort. No `model` on any spawn, no per-role configuration, no availability gate. |
 | Setup | `$setup-pstack` readiness check | `/pstack:setup-pstack`, the same check. It never writes settings. |
@@ -43,8 +43,8 @@ distribution. Children inherit the session's model and effort.
 | Plugin files at runtime | `<pstack root>` is the installed plugin root | `${CLAUDE_PLUGIN_ROOT}`, substituted inside skill bodies. Fallback: `ls -d ~/.claude/plugins/cache/pstack-claude/pstack/*/`. |
 | Plugin logo | `interface.logo` | Not shipped. Claude Code `plugin.json` has no logo field. |
 | Skill path filter | Not shipped | `paths: "**/*.ts,**/*.tsx"` on `typescript-best-practices`, restored from upstream. |
-| Explicit-only skill | `agents/openai.yaml` `allow_implicit_invocation: false` on `unslop` | `disable-model-invocation: true` on `unslop`. Other skills read `../unslop/SKILL.md` for its rules. |
-| Hidden leaves | All skills listed | `user-invocable: false` on the 23 `principle-*` skills. The model loads them; the slash menu hides them. |
+| Explicit-only skill | `agents/openai.yaml` `allow_implicit_invocation: false` on all 46 skills | `disable-model-invocation: true` on all 46 skills, as upstream ships them. Routes between skills are file reads. |
+| Hidden leaves | All skills listed | `user-invocable: false` as well on the 23 `principle-*` skills. The slash menu hides them; `poteto-mode` reads them from disk. |
 
 ## Default delegation shape
 
@@ -88,6 +88,6 @@ Transcript-aware skills stay inside the active project's slug. Session-scoped sk
 
 The GitHub PR watcher retains support for Cursor Bugbot automation markers because those comments can exist on a PR regardless of the local agent harness. This is source compatibility, not a runtime dependency.
 
-## Pending upstream mappings
+## Explicit-only invocation
 
-- `73f8be4` `pstack/skills/{how,make-bot-ui,typescript-best-practices,unslop,why}/SKILL.md`: Cursor `disable-model-invocation`. Carried only on `unslop`, matching the Codex port's explicit-only policy. On `how`, `why`, and `typescript-best-practices` it would make the Skill tool refuse routes out of `poteto-mode`, so they stay model-invocable. `make-bot-ui` is not in this port.
+Upstream 0.15.0 ships `disable-model-invocation: true` on all 46 skills and the Codex port ships `allow_implicit_invocation: false` on all 46. Port 2.1.0 matches. Claude Code then drops the descriptions from context and blocks the Skill tool on them, including a call made from inside another skill, so every route between skills is a read of `${CLAUDE_PLUGIN_ROOT}/skills/<name>/SKILL.md`. `poteto-mode` states the rule once; skills that route on their own (`teach`, `architect`, `blast-radius`, `recall`, `technical-writing`, `show-me-your-work`, `no-comments`, `figure-it-out`, `principle-prove-it-works`) carry one line each. `make-bot-ui` is not in this port.
