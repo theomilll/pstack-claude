@@ -1,6 +1,6 @@
 {
   "name": "pstack",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Claude Code port of poteto's pstack: rigorous agent workflows, playbooks, principles, and verification skills.",
   "author": {
     "name": "theomilll"

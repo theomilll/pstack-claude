@@ -2,11 +2,14 @@
 name: principle-prove-it-works
 description: "Apply after completing a task, before declaring done. Verify against the real artifact (run the feature, read the actual value, inspect the diff), not a proxy, self-report, or 'it compiles.'"
 user-invocable: false
+disable-model-invocation: true
 ---
 
 # Prove It Works
 
 Verify every task output by checking the real thing directly. Do not infer from proxies, self-reports, or "it compiles."
+
+Sibling skills load from disk. pstack skills are explicit-only, so when this skill names another one, open `${CLAUDE_PLUGIN_ROOT}/skills/<name>/SKILL.md` and follow it.
 
 **Why:** Unverified work has unknown correctness. Indirect verification (file mtimes, output freshness, agent self-reports, cached screenshots) feels cheaper than direct observation. Acting on a wrong inference costs far more than checking the source.
 

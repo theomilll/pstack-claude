@@ -26,8 +26,11 @@ Agent
   isolation: worktree            (any concurrent writer)
 ```
 
-Writing lanes run as `general-purpose` and open with an instruction to invoke
-`/pstack:poteto-mode` or the relevant routed skill before any work. Omit the
+Writing lanes run as `general-purpose` and open with an instruction to read
+`${CLAUDE_PLUGIN_ROOT}/skills/poteto-mode/SKILL.md`, or the routed skill's
+file, and follow it before any work. Paste the resolved absolute path into
+the brief. pstack skills are explicit-only, so a child cannot invoke them and
+their descriptions are not in its context. Omit the
 `model` parameter and any effort override. Subagents run in the background and
 the parent receives a task notification when one finishes. Spawn independent
 children in one message so they run concurrently.

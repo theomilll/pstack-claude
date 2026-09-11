@@ -21,7 +21,6 @@ expect_count() {
 
 python3 -m json.tool "$root/.claude-plugin/marketplace.json" >/dev/null
 python3 -m json.tool "$plugin/.claude-plugin/plugin.json" >/dev/null
-python3 -m json.tool "$plugin/hooks/hooks.json" >/dev/null
 
 expect_count skills "$(count_files "$plugin/skills" -mindepth 2 -maxdepth 2 -name SKILL.md)" 46
 expect_count playbooks "$(count_files "$plugin/skills/poteto-mode/playbooks" -maxdepth 1 -type f -name '*.md')" 23
@@ -54,7 +53,10 @@ fi
 for skill in "$plugin"/skills/principle-*/SKILL.md; do
 	grep -q '^user-invocable: false$' "$skill" || fail "$(basename "$(dirname "$skill")") is visible in the slash menu"
 done
-grep -q '^disable-model-invocation: true$' "$plugin/skills/unslop/SKILL.md" || fail 'unslop is not explicit-only'
+for skill in "$plugin"/skills/*/SKILL.md; do
+	grep -q '^disable-model-invocation: true$' "$skill" || fail "$(basename "$(dirname "$skill")") is not explicit-only"
+done
+[ ! -e "$plugin/hooks" ] || fail 'the startup hook is back; explicit-only skills cannot honor it'
 grep -q '^paths: ' "$plugin/skills/typescript-best-practices/SKILL.md" || fail 'typescript-best-practices lost its paths scope'
 grep -q '^disallowedTools: Edit, Write, NotebookEdit$' "$plugin/agents/read-only.md" || fail 'read-only agent does not drop the edit tools'
 if rg -n '^(model|effort):' "$plugin/agents" "$plugin/skills" -g '*.md'; then
@@ -62,7 +64,7 @@ if rg -n '^(model|effort):' "$plugin/agents" "$plugin/skills" -g '*.md'; then
 fi
 
 banned='(codex|CODEX_HOME|CODEX_THREAD_ID|\.agents/|spawn_agent|followup_task|wait_agent|interrupt_agent|list_agents|openai\.yaml|allow_implicit_invocation|pstack-models|codex-rescue|pstack:poteto-agent|pstack:comment-sicko|\.cursor/|\$(poteto-mode|arena|how|why|no-comments|architect|swarm|create-verification-skill|unslop|interrogate|technical-writing|tdd|recall|teach|setup-pstack|maintain-verification-skill|show-me-your-work|reflect|automate-me|figure-it-out|bro|blast-radius|skill-creator)\b)'
-if rg -n -i --glob '!**/node_modules/**' "$banned" "$plugin/skills" "$plugin/docs" "$plugin/agents" "$plugin/hooks"; then
+if rg -n -i --glob '!**/node_modules/**' "$banned" "$plugin/skills" "$plugin/docs" "$plugin/agents"; then
 	fail 'Codex or legacy contract remains in a skill, guide, agent, or hook'
 fi
 
@@ -70,26 +72,6 @@ node --test "$root/scripts/check-model-policy.test.mjs" "$root/scripts/check-pla
 node "$root/scripts/check-model-policy.mjs" "$root"
 
 bash -n "$helpers/worktree-audit.sh"
-
-hook_command=$(python3 - "$plugin/hooks/hooks.json" <<'PY'
-import json
-import sys
-
-with open(sys.argv[1], encoding="utf-8") as handle:
-    payload = json.load(handle)
-hooks = payload["hooks"]["SessionStart"]
-assert len(hooks) == 1
-assert hooks[0]["matcher"] == "startup|resume|clear|compact"
-commands = hooks[0]["hooks"]
-assert len(commands) == 1 and commands[0]["type"] == "command"
-print(commands[0]["command"])
-PY
-)
-hook_output=$(sh -c "$hook_command")
-case "$hook_output" in
-	*pstack:poteto-mode*) ;;
-	*) fail 'startup hook did not emit the poteto-mode reminder' ;;
-esac
 
 (
 	cd "$helpers"

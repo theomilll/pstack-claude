@@ -1,11 +1,14 @@
 ---
 name: figure-it-out
 description: "Design an auditable playbook when no narrower one fits: a large migration, an ambitious multi-part change, or work a human reviews after stepping away. Scales rigor to the task, runs a hypothesis loop, and logs decisions via show-me-your-work. Use for /pstack:figure-it-out, 'figure it out', a large migration, or when no narrower playbook applies."
+disable-model-invocation: true
 ---
 
 # Figure it out
 
 When the task matches no playbook, design one. The deliverable before any code is the workflow itself: a sequence of phases that scales rigor to the task, runs the scientific method, and leaves a decision trail a human can audit after stepping away. Bias toward more rigor. The cost of building the wrong thing dwarfs the cost of being careful.
+
+Sibling skills load from disk. pstack skills are explicit-only, so when this skill names another one, open `${CLAUDE_PLUGIN_ROOT}/skills/<name>/SKILL.md` and follow it.
 
 ## Start
 

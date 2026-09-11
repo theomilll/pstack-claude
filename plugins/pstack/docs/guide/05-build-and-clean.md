@@ -42,9 +42,9 @@ When a bug has a cheap local test path, the whole prompt can be two words:
 
 In context, that's enough. [`/pstack:tdd`](../../skills/tdd/SKILL.md) writes the smallest test that fails for the intended reason, then the fix, then reruns the test. If a test would need broad harness setup or brittle mocks, the skill says so and uses the closest executable check instead. Don't force a test where a real command is stronger evidence.
 
-## Let the TypeScript rules load themselves
+## Load the TypeScript rules
 
-[`typescript-best-practices`](../../skills/typescript-best-practices/SKILL.md) usually applies implicitly whenever the agent touches a `.ts` or `.tsx` file. It turns the type-system principles into concrete rules: discriminated unions, `unknown` at boundaries, exhaustive variants, schema-derived types.
+[`typescript-best-practices`](../../skills/typescript-best-practices/SKILL.md) carries the rules for `.ts` and `.tsx` work. Like every pstack skill it is explicit-only, so invoke it or let `/pstack:poteto-mode` route to it. It turns the type-system principles into concrete rules: discriminated unions, `unknown` at boundaries, exhaustive variants, schema-derived types.
 
 ## Clean before you commit
 

@@ -2,6 +2,7 @@
 name: principle-test-behavior-not-implementation
 description: "Apply when you write, change, or keep a test. Call the code the way its users do and assert the result they observe against a literal expected value. If the test still passes when every imported function returns undefined, check whether its assertion observes the intended behavior."
 user-invocable: false
+disable-model-invocation: true
 ---
 
 # Test Behavior, Not Implementation
