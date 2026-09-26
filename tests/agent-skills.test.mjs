@@ -14,10 +14,8 @@ import { fileURLToPath } from "node:url";
 
 import {
   agentSkills,
-  codexModelNamesSection,
   PORTABLE_ASSETS,
   publicSkills,
-  resolveModels,
   syncPortableAssets,
 } from "../tools/generate.mjs";
 import { validateProsePaths, validateSkillsTree, walk } from "../tools/validate-skills.mjs";
@@ -96,8 +94,8 @@ describe("shared Agent Skills tree", () => {
           "# Reference",
           "",
           "Read `../playbooks/babysit.md` first.",
-          "Write the log to `/tmp/<slug>-resume.md` and run `/setup-pstack`.",
-          "Edit `plugins/pstack/models.json`, then rerun `tools/generate.mjs`.",
+          "Write the log to `/tmp/<slug>-resume.md` and run `/some-command`.",
+          "Edit `plugins/pstack/config.json`, then rerun `tools/generate.mjs`.",
           "Cursor keeps rules in `.cursor/rules/`; Claude Code has no `hooks/nope.md`.",
         ].join("\n"),
       );
@@ -357,22 +355,5 @@ describe("shared Agent Skills tree", () => {
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
-  });
-});
-
-describe("Codex model names", () => {
-  test("names a strongest Codex model for the roles that default to it on Claude", () => {
-    const raw = JSON.parse(readFileSync(join(repoRoot, "plugins/pstack/models.json"), "utf8"));
-    const oneOff = raw.roles.map((r) => (r.role === "swarm workers" ? { ...r, models: ["haiku"] } : r));
-    const section = codexModelNamesSection(resolveModels({ ...raw, roles: oneOff }));
-    const strongestLine = section.split("\n").find((line) => line.includes("strongest Claude model"));
-
-    expect(strongestLine).not.toContain("swarm workers");
-
-    expect(strongestLine).toContain(`\`${raw.codex.strongest}\``);
-    for (const role of ["bug-fix", "perf-issue", "hillclimb", "strongest judgment"]) {
-      expect(section).toContain(role);
-    }
-    for (const family of raw.available) expect(section).not.toContain(`\`${family}\``);
   });
 });

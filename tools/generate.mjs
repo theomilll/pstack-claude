@@ -15,19 +15,12 @@
 //   The row set must equal the public skills (every Agent Skill not marked
 //   user-invocable: false); a skill without a row or a row without a skill
 //   fails by name.
-//   plugins/pstack/models.json (the model policy: role defaults, diverse panel,
-//   available slugs, Codex equivalents)
-//     -> each model-consuming skill's "## Models" section
-//     -> setup-pstack's override-sheet block and interrogate's reviewer table
-//     -> the "## Model names" section of poteto-mode/references/codex-tools.md
-//     -> one effort agent pair per level in plugins/pstack/effort-agents/
-//   plugins/pstack/{agents,effort-agents}/*.md -> the "agents" list in
+//   plugins/pstack/agents/*.md -> the "agents" list in
 //     plugins/pstack/.claude-plugin/plugin.json (a list replaces the default
 //     agents/ directory, so it names every agent)
 //   plugins/pstack/agents/{poteto-agent,comment-sicko}.md, LICENSE,
 //   LICENSE-cursor-team-kit, and NOTICE-skills.md
 //     -> portable copies under poteto-mode/references/{agents,licenses}/
-//   No other claude-* slug may appear in skill prose; the scan below fails on strays.
 //
 // Also validated: .agents/plugins/marketplace.json points at a real plugin
 // directory whose Codex manifest name matches (it carries no version; Codex
@@ -309,43 +302,14 @@ export function slashCommands(markdown, skillNames) {
 export function promptStub({ name, menu }) {
   return (
     `---\nname: ${name}\ndescription: ${menu}\ndisable-model-invocation: true\n---\n\n` +
-    `Invoke the \`${name}\` skill and follow it. Resolve Claude tool names, Claude model names, and ` +
+    `Invoke the \`${name}\` skill and follow it. Resolve Claude tool names, model routing, and ` +
     "Claude built-in skills through `poteto-mode/references/codex-tools.md`, including its Per-skill notes.\n"
   );
 }
 
-const code = (s) => `\`${s}\``;
-const codeList = (models) => models.map(code).join(", ");
-
-// Locators find a generator-owned span of a file and return its [start, end)
-// line range, or null when the anchor is absent. The same locator serves the
-// stamp (splice the rendered lines in) and the stray-slug scan (skip the
-// lines it owns), so the two can never disagree about where a region is.
-
-// The body of a "## <title>" section: everything up to the next "## " heading or EOF.
-export const section = (title) => (lines) => {
-  const start = lines.indexOf(`## ${title}`);
-  if (start === -1) return null;
-  let end = start + 1;
-  while (end < lines.length && !lines[end].startsWith("## ")) end++;
-  return [start + 1, end];
-};
-
-// The inside of the first ```<lang> fence after the `### N. <title>` step
-// heading. The ordinal is not part of the anchor, so inserting a step above it
-// does not move the region.
-export const fenceUnder = (title, lang) => (lines) => {
-  const heading = "### " + title;
-  const step = lines.findIndex((l) => l.replace(/^### \d+\. /, "### ") === heading);
-  if (step === -1) return null;
-  const open = lines.indexOf("```" + lang, step);
-  if (open === -1) return null;
-  const close = lines.indexOf("```", open + 1);
-  return close === -1 ? null : [open + 1, close];
-};
-
 // The rows under a markdown table header (header line, separator, then every
-// consecutive line starting with rowPrefix).
+// consecutive line starting with rowPrefix), as a [start, end) line range, or
+// null when the header is absent.
 export const tableRows = (header, rowPrefix) => (lines) => {
   const start = lines.indexOf(header);
   if (start === -1) return null;
@@ -354,292 +318,31 @@ export const tableRows = (header, rowPrefix) => (lines) => {
   return [start + 2, end];
 };
 
-const blankPadded = (body) => ["", ...body.split("\n"), ""];
-
-// Every generator-owned region: the file it lives in (repo-relative), how to
-// find it, and what it renders from the model policy. Adding a stamped region
-// means adding a row here; the stray-slug scan exempts exactly these spans.
-export function regions(models) {
-  const skillFile = (skill) => `plugins/pstack/skills/${skill}/SKILL.md`;
-  const rolesBySkill = new Map();
-  for (const r of models.roles) {
-    if (!rolesBySkill.has(r.skill)) rolesBySkill.set(r.skill, []);
-    rolesBySkill.get(r.skill).push(r);
-  }
-  const reviewers = models.roles.find((r) => r.role === "interrogate reviewers").models;
-  return [
-    ...[...rolesBySkill]
-      .filter(([skill]) => skill !== "interrogate")
-      .map(([skill, roles]) => ({
-        file: skillFile(skill),
-        name: "Models section",
-        locate: section("Models"),
-        appendHeading: "## Models",
-        render: () => blankPadded(modelsSection(roles)),
-      })),
-    {
-      file: skillFile("interrogate"),
-      name: "reviewer table",
-      locate: tableRows("| Subagent | Default model |", "| Reviewer "),
-      render: () => reviewers.map((m, i) => `| Reviewer ${String.fromCharCode(65 + i)} | ${code(m)} |`),
-    },
-    ...[...rolesBySkill].map(([skill]) => ({
-      file: skillFile(skill),
-      name: "Reasoning effort section",
-      locate: section("Reasoning effort"),
-      appendHeading: "## Reasoning effort",
-      render: () => blankPadded(effortSection(models.efforts, models.defaultEffort)),
-    })),
-    {
-      file: skillFile("setup-pstack"),
-      name: "Models section",
-      locate: section("Models"),
-      render: () => blankPadded(setupModelsSection(models)),
-    },
-    {
-      file: skillFile("setup-pstack"),
-      name: "override sheet",
-      locate: fenceUnder("Write the override sheet", "markdown"),
-      render: () => [overrideSheetBlock(models)],
-    },
-    {
-      file: "plugins/pstack/skills/poteto-mode/references/codex-tools.md",
-      name: "Model names section",
-      locate: section("Model names"),
-      render: () => blankPadded(codexModelNamesSection(models)),
-    },
-  ];
-}
-
-// Stamp every region the generator owns in `file` (repo-relative). A missing
-// anchor throws: a stamped region is a structural contract with the file, not
-// an optional nicety. With strict: false a missing anchor is left alone.
-export function applyRegions(file, text, models, { strict = true } = {}) {
-  const lines = text.split("\n");
-  for (const region of regions(models).filter((r) => r.file === file)) {
-    const range = region.locate(lines);
-    if (!range) {
-      if (strict) throw new Error(`${file}: no anchor for the ${region.name} to stamp`);
-      continue;
-    }
-    lines.splice(range[0], range[1] - range[0], ...region.render());
-  }
-  return lines.join("\n");
-}
-
-// A role's "models" names a tier (default, strongest, panel) or lists slugs.
-// A tier resolves to its models and stays on the role as `tier`, so moving a
-// tier is one edit and the Codex mapping can follow the same keys.
-export function resolveModels(models) {
-  return {
-    ...models,
-    roles: models.roles.map((r) =>
-      typeof r.models === "string" ? { ...r, tier: r.models, models: [models.tiers[r.models]].flat() } : r,
-    ),
-  };
-}
-
-export function loadModels() {
-  return resolveModels(JSON.parse(readFileSync(join(repo, "plugins/pstack/models.json"), "utf8")));
-}
-
 // The port's derivation of an upstream file, as tools/sync.mjs applies it
 // before comparing with the local copy. Upstream ships
 // disable-model-invocation: true on every skill; the port drops it on public
 // skills and swaps it for user-invocable: false on principle leaves (CHANGES
-// 0.9.8, 0.9.9). Then the generator's own stamps: a Models section is
-// appended as the last H2 when upstream has none, which is where every
-// hand-added one already sits. A region whose anchor upstream lacks is left
-// unstamped, so the file surfaces as forked or conflicted instead of
-// aborting the sync.
-export function deriveSkill(file, text, models = loadModels()) {
-  let out = text;
+// 0.9.8, 0.9.9).
+export function deriveSkill(file, text) {
   const skill = file.match(/^plugins\/pstack\/skills\/([^/]+)\/SKILL\.md$/)?.[1];
-  if (skill) {
-    const swap = skill.startsWith("principle-") ? "\nuser-invocable: false\n" : "\n";
-    out = out.replace("\ndisable-model-invocation: true\n", swap);
-  }
-  const lines = out.split("\n");
-  for (const region of regions(models).filter((r) => r.file === file && r.appendHeading)) {
-    if (region.locate(lines)) continue;
-    if (lines.at(-1) !== "") lines.push("");
-    lines.push(region.appendHeading, "");
-  }
-  return applyRegions(file, lines.join("\n"), models, { strict: false });
+  if (!skill) return text;
+  const swap = skill.startsWith("principle-") ? "\nuser-invocable: false\n" : "\n";
+  return text.replace("\ndisable-model-invocation: true\n", swap);
 }
-
-export function modelsSection(roles) {
-  const bullets = roles.map((r) => `- ${r.role}: ${codeList(r.models)}`).join("\n");
-  return (
-    "Role defaults, stamped from `plugins/pstack/models.json` (edit there, rerun `tools/generate.mjs`). " +
-    "A matching role line in the `pstack-models.md` override sheet overrides each at runtime; `/setup-pstack` writes it and lists its path per runtime.\n\n" +
-    bullets
-  );
-}
-
-// An override value may name a reasoning effort after its slug. Claude Code has
-// no per-call effort parameter, but a subagent definition's `effort` frontmatter
-// overrides the session's effort, so each level ships as an agent the role is
-// dispatched through, with the model still passed on the call.
-export function effortSection(levels, defaultEffort) {
-  return (
-    "A role value in the override sheet may name a reasoning effort after its model, as in `opus @xhigh`. " +
-    "Levels on Claude Code: " + codeList(levels) + ". Which ones apply depends on the model. " +
-    "A value without `@` takes the sheet's `default effort` line, a level or `session`, " +
-    `and ${code(defaultEffort)} when the sheet has no such line. \`session\` sets no effort, so the dispatch ` +
-    "is the usual one. Strip the suffix before reading the model: `inherit-parent` or `auto` still omits `model` " +
-    "at every level, and a model name is passed as `model`. " +
-    "On Claude Code, a level picks the effort agent from the `subagent_type` you would otherwise use. " +
-    "`pstack:poteto-agent` becomes `subagent_type: \"pstack:poteto-agent-<level>\"`. " +
-    "`general-purpose`, or no `subagent_type`, becomes `subagent_type: \"pstack:effort-<level>\"`. " +
-    "The effort agents set only `effort`, so the model you pass still decides the model. " +
-    "On Codex, pass the level as `spawn_agent`'s `reasoning_effort` and keep the usual instructions."
-  );
-}
-
-// The effort agents: one general-purpose worker and one poteto-agent per level.
-// The poteto variants carry poteto-agent's body, so the routing contract is
-// written once in plugins/pstack/agents/poteto-agent.md.
-export function effortAgents(levels, potetoAgent) {
-  const body = potetoAgent.replace(/^---\n[\s\S]*?\n---\n/, "");
-  return levels.flatMap((level) => [
-    {
-      name: `effort-${level}`,
-      text:
-        `---\nname: effort-${level}\ndescription: pstack subagent with the full tool set that runs at ${level} reasoning effort. ` +
-        `Its system prompt is this file, not the built-in \`general-purpose\` prompt. Dispatched in place of ` +
-        `\`general-purpose\` when a pstack role's override names \`@${level}\`. The caller passes the model.\n` +
-        `effort: ${level}\n---\n\n# pstack subagent (${level} effort)\n\n` +
-        "Do the task in your prompt. You have the full tool set. " +
-        "The effort level changes how long you reason, not the task.\n",
-    },
-    {
-      name: `poteto-agent-${level}`,
-      text:
-        `---\nname: poteto-agent-${level}\ndescription: \`pstack:poteto-agent\` at ${level} reasoning effort. ` +
-        `Dispatched in place of \`pstack:poteto-agent\` when a pstack role's override names \`@${level}\`. The caller passes the model.\n` +
-        `effort: ${level}\n---\n` + body,
-    },
-  ]);
-}
-
-// The effort agents live in a directory the generator owns outright, apart
-// from the hand-written agents in plugins/pstack/agents/. Any other entry in it
-// is removed, and a symlink is never written through.
-export function syncEffortAgents(outDir, agents, { log = console.log } = {}) {
-  const dirName = basename(outDir);
-  if (lstatSync(outDir, { throwIfNoEntry: false })?.isSymbolicLink()) {
-    throw new Error(`${dirName}/ is a symlink; refusing to write through it`);
-  }
-  mkdirSync(outDir, { recursive: true });
-  const files = agents.map((a) => ({ file: `${a.name}.md`, path: join(outDir, `${a.name}.md`), text: a.text }));
-  for (const { file, path } of files) {
-    const st = lstatSync(path, { throwIfNoEntry: false });
-    if (st && !st.isFile()) throw new Error(`${dirName}/${file} is not a regular file; refusing to overwrite it`);
-  }
-
-  let stamped = 0;
-  let removed = 0;
-  for (const { file, path, text } of files) {
-    if (existsSync(path) && readFileSync(path, "utf8") === text) continue;
-    writeFileSync(path, text);
-    stamped += 1;
-    log(`stamped: ${dirName}/${file}`);
-  }
-  const expected = new Set(files.map((f) => f.file));
-  for (const entry of readdirSync(outDir)) {
-    if (expected.has(entry)) continue;
-    rmSync(join(outDir, entry), { recursive: true, force: true });
-    removed += 1;
-    log(`removed orphan: ${dirName}/${entry}`);
-  }
-  return { stamped, removed, total: files.length };
-}
-
-const AGENT_DIRS = ["agents", "effort-agents"];
 
 // Every agent file the plugin ships, as plugin.json's "agents" list names them.
 export function pluginAgentPaths(pluginRoot) {
-  return AGENT_DIRS.flatMap((dir) =>
-    existsSync(join(pluginRoot, dir))
-      ? readdirSync(join(pluginRoot, dir))
-          .filter((f) => f.endsWith(".md"))
-          .sort()
-          .map((f) => `./${dir}/${f}`)
-      : [],
-  );
+  const dir = join(pluginRoot, "agents");
+  return existsSync(dir)
+    ? readdirSync(dir)
+        .filter((f) => f.endsWith(".md"))
+        .sort()
+        .map((f) => `./agents/${f}`)
+    : [];
 }
 
 export function stampAgentPaths(manifestText, paths) {
   return JSON.stringify({ ...JSON.parse(manifestText), agents: paths }, null, 2) + "\n";
-}
-
-export function setupModelsSection(models) {
-  return (
-    "Stamped from `plugins/pstack/models.json` (edit there, rerun `tools/generate.mjs`).\n\n" +
-    `- Available Claude models: ${codeList(models.available)}\n` +
-    `- Default panel: ${codeList(models.tiers.panel)}\n` +
-    `- Reasoning effort levels: ${codeList(models.efforts)}\n` +
-    `- Default reasoning effort: ${code(models.defaultEffort)}\n` +
-    `- Single-role default: ${code(models.tiers.default)}`
-  );
-}
-
-// The override sheet the setup skill writes for users. The preamble is fixed;
-// the role rows come from models.json.
-export function overrideSheetBlock(models) {
-  const rows = models.roles.map((r) => `${r.role}: ${r.models.join(", ")}`).join("\n");
-  return (
-    "# pstack model configuration\n\n" +
-    "Per-role model overrides for pstack skills. Each pstack SKILL.md names its defaults in a Models section; " +
-    "the values here override those defaults. Delete a line to fall back to the skill default. " +
-    "A value of `inherit-parent` or `auto` runs that role on the parent session's model (the `Agent` call omits `model`); " +
-    "an alias entry in a panel list still counts toward that panel's fan-out. " +
-    "A model may carry a reasoning effort, as in `opus @xhigh` (levels: " + models.efforts.join(", ") + "); " +
-    "the role then runs through the pstack effort agent of that level, each entry of a panel list on its own. " +
-    "`default effort` sets the level for a value without one; `session` keeps the parent session's effort. " +
-    "`session hook: off` stops the Claude Code or Codex SessionStart hook from injecting the poteto-mode mandate; " +
-    "any other value, or no line, leaves it on.\n\n" +
-    rows +
-    `\n\ndefault effort: ${models.defaultEffort}\nsession hook: on`
-  );
-}
-
-export function codexModelNamesSection(models) {
-  const strongest = models.roles.filter((r) => r.tier === "strongest");
-  return (
-    "Skills name Claude defaults (a single-role default for code/prose/judgment plus a diverse-model panel for " +
-    "diverse-model panels; each model-consuming skill lists its own in a Models section). These slugs do not " +
-    "resolve on Codex. Substitute your configured Codex models:\n\n" +
-    `- Single-model roles: your primary Codex model (for example ${code(models.codex.default)}).\n` +
-    `- Roles that default to the strongest Claude model (${strongest.map((r) => code(r.role)).join(", ")}): ` +
-    `your strongest Codex model (for example ${code(models.codex.strongest)}).\n` +
-    "- Diverse-model panels (`arena`, `architect`, `interrogate`, `how` critics, `reflect`): the adversarial " +
-    "signal comes from model diversity, so use the distinct Codex models available to you. A good default panel " +
-    `on ChatGPT is ${codeList(models.codex.panel)}. If only one model family is reachable, vary reasoning ` +
-    "effort and note in the verdict that diversity was reduced.\n\n" +
-    "`/setup-pstack` writes the configured model list. On Codex, set it to your Codex model slugs."
-  );
-}
-
-// After stamping, skill prose outside the regions the generator owns may name
-// no model: a full claude-* ID is rejected by the Agent tool, and a backticked
-// family name hard-codes a default that belongs in models.json.
-export function strayModelSlugs(file, text, models) {
-  const families = models.available.join("|");
-  const SLUG_RE = new RegExp(`claude-(?:${families})[0-9a-z.-]*|\`(?:${families})\``);
-  const lines = text.split("\n");
-  const owned = regions(models)
-    .filter((r) => r.file === file)
-    .map((r) => r.locate(lines))
-    .filter(Boolean);
-  const strays = [];
-  lines.forEach((line, i) => {
-    if (!SLUG_RE.test(line)) return;
-    if (owned.some(([s, e]) => i >= s && i < e)) return;
-    strays.push(`${file}:${i + 1}: ${line.trim()}`);
-  });
-  return strays;
 }
 
 // Every ${CLAUDE_PLUGIN_ROOT}/<path> a hook command names must exist in the
@@ -691,26 +394,7 @@ function main() {
     }
   }
 
-  const models = loadModels();
   const skillsDir = join(repo, "plugins/pstack/skills");
-
-  let modelStamps = 0;
-  for (const file of new Set(regions(models).map((r) => r.file))) {
-    const path = join(repo, file);
-    if (stampFile(path, applyRegions(file, readFileSync(path, "utf8"), models), `${file} (models)`)) modelStamps++;
-  }
-  if (modelStamps === 0) console.log("ok: model-policy sections current");
-
-  const strays = markdownFiles(skillsDir).flatMap((full) =>
-    strayModelSlugs(full.slice(repo.length + 1), readFileSync(full, "utf8"), models),
-  );
-  if (strays.length) {
-    throw new Error(
-      `model names outside generator-owned regions (reference the role and its Models section instead):\n` +
-        strays.join("\n"),
-    );
-  }
-  console.log("ok: no stray model slugs in skill prose");
 
   const skills = slashCommands(readFileSync(join(repo, COMMANDS_DOC), "utf8"), publicSkills(skillsDir));
   console.log(`ok: ${COMMANDS_DOC} slash-command table names the ${skills.length} public skills`);
@@ -731,9 +415,6 @@ function main() {
   if (promptsChanged === 0) console.log(`ok: ${skills.length} Codex prompts current`);
 
   const pluginRoot = join(repo, "plugins/pstack");
-  const agents = effortAgents(models.efforts, readFileSync(join(pluginRoot, "agents/poteto-agent.md"), "utf8"));
-  const effort = syncEffortAgents(join(pluginRoot, "effort-agents"), agents);
-  if (effort.stamped === 0 && effort.removed === 0) console.log(`ok: ${effort.total} effort agents current`);
   const manifestPath = join(pluginRoot, ".claude-plugin/plugin.json");
   const agentPaths = pluginAgentPaths(pluginRoot);
   if (!stampFile(manifestPath, stampAgentPaths(readFileSync(manifestPath, "utf8"), agentPaths), "plugin.json agents")) {

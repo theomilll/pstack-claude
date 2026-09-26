@@ -4,7 +4,7 @@ Start with the [README](../README.md) for installation and your first task.
 
 ## Slash commands
 
-The package includes 54 skill directories: 31 public skills and 23 `principle-*` references. Claude Code uses `/pstack:<name>`. In Codex, request a skill by name or install the [optional shortcuts](#codex) for the `/name` form below.
+The package includes 53 skill directories: 30 public skills and 23 `principle-*` references. Claude Code uses `/pstack:<name>`. In Codex, request a skill by name or install the [optional shortcuts](#codex) for the `/name` form below.
 
 Find each skill's instructions in the [skills tree](../plugins/pstack/skills/).
 
@@ -28,7 +28,6 @@ Find each skill's instructions in the [skills tree](../plugins/pstack/skills/).
 | `/show-me-your-work` | log decisions to a reviewable tsv decision trail |
 | `/blast-radius` | find what a change could break beyond the diff and prove safety by running code |
 | `/recall` | catch up on recent working context from chat history, live state, and the shared record |
-| `/setup-pstack` | configure pstack per-role model choices |
 | `/unslop` | clean up writing by removing AI tells |
 | `/no-comments` | strip comments before review, fix the accepted findings, encode claimed constraints |
 | `/create-verification-skill` | generate a project-local verification skill and feature map |
@@ -66,7 +65,7 @@ The Claude Code and Codex plugins share a [SessionStart hook](../plugins/pstack/
 
 Smaller tasks proceed directly. The full skill loads when invoked, and explicit user instructions take precedence.
 
-To disable routing, run `setup-pstack` and turn off the session hook. In Claude Code, use `/pstack:setup-pstack`. You can also write `session hook: off` in the runtime's sheet: `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/pstack-models.md` for Claude Code or `~/.codex/pstack-models.md` for Codex. The hook reads that setting before injecting its instruction. Without the setting, routing stays on.
+To disable routing, create `pstack-models.md` in the runtime's config directory with the line `session hook: off`: `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/pstack-models.md` for Claude Code or `${CODEX_HOME:-$HOME/.codex}/pstack-models.md` for Codex. The hook reads that line before injecting its instruction. Without it, routing stays on.
 
 Skills-only installs and other runtimes do not include the hook. Request `poteto-mode` explicitly, or add a standing instruction to the runtime's instruction file.
 
@@ -133,9 +132,7 @@ Each shortcut invokes its skill. The commands skip existing files and links. Rem
 
 ## Configuration and dependencies
 
-Invoke [setup-pstack](../plugins/pstack/skills/setup-pstack/SKILL.md) to choose models for each role. It detects available models, confirms the choices, and writes an override sheet. Its [runtime table](../plugins/pstack/skills/setup-pstack/SKILL.md#other-runtimes) names the sheet path and loading mechanism for each runtime. Defaults live in [models.json](../plugins/pstack/models.json).
-
-For design comparisons and reviews, choose distinct models available to your runtime. The default panel uses different Claude models.
+pstack names no model. Skills that benefit from different or stronger models, such as review panels and design comparisons, pick them with the Model routing section of your `CLAUDE.md` (`AGENTS.md` on Codex). Without that section, they run on the session's model and vary reasoning effort where they wanted different models.
 
 Install dependencies for the workflows you use:
 
@@ -200,7 +197,7 @@ The skill tree is synced against upstream `12d587d` (v0.15.5).
 
 This repository ports Lauren Tan's pstack from Cursor to Claude Code and shares the skills with other runtimes. It includes seven cursor-team-kit skills and an independently authored `babysit` skill. The port supplies Claude Code plugin registration and routing, Codex manifests and shortcuts, and the Codex tool mapping.
 
-Cursor-specific automations, sticky-mode metadata, the Grok Bot UI workflow, and the Cursor UI tutorial are excluded. [tools/upstream.json](../tools/upstream.json) records the revisions and exclusions; [CHANGES.md](../CHANGES.md) records the per-skill port changes. The bundled `thermo-nuclear-code-quality-review` provides a maintainability review when a workflow calls for one.
+Cursor-specific automations, sticky-mode metadata, the `make-bot-ui` workflow, and the Cursor UI tutorial are excluded. [tools/upstream.json](../tools/upstream.json) records the revisions and exclusions; [CHANGES.md](../CHANGES.md) records the per-skill port changes. The bundled `thermo-nuclear-code-quality-review` provides a maintainability review when a workflow calls for one.
 
 For skill changes, follow the [sync boundary](../CONTRIBUTING.md#the-sync-boundary). Workflow changes usually belong upstream; runtime adaptations belong here.
 

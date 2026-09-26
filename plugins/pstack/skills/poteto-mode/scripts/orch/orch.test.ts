@@ -358,7 +358,7 @@ describe("Store", () => {
       sha: "abc123",
       verdict: "unit-test-verified",
       evidence: "reports/verify.md",
-      verifier: "sol",
+      verifier: "verifier-a",
     });
     expect(await store.ledger.check({ pr: 184530, sha: "abc123" })).toEqual(
       recorded,

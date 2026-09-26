@@ -1,11 +1,6 @@
 {
   "substitutions": [
     {
-      "pattern": "~/.cursor/rules/pstack-models.mdc",
-      "replacement": "pstack-models.md",
-      "rationale": "the per-role override sheet; must precede the generic .cursor/rules/ rule or that rule mangles the path"
-    },
-    {
       "pattern": "AskQuestion",
       "replacement": "AskUserQuestion",
       "rationale": "Claude Code's fixed-choice question tool; upstream Cursor names it AskQuestion"
@@ -36,16 +31,14 @@
       "rationale": "the host application"
     },
     {
-      "regex": "\\(default `(?:claude|gpt|grok|gemini|composer)-[^`]+`\\)",
-      "files": "^skills/poteto-mode/playbooks/",
-      "replacement": "(default in poteto-mode's Models section)",
-      "rationale": "model defaults live in models.json and are stamped into Models sections, never hard-coded in prose; playbooks belong to poteto-mode"
+      "regex": "your configured [^`()]*? model \\(default `(?:claude|gpt|grok|gemini|composer)-[^`]+`\\)",
+      "replacement": "a model picked with the Model routing section of your CLAUDE.md (AGENTS.md on Codex)",
+      "rationale": "the port has no per-role model configuration; the whole phrase defers to the user's Model routing"
     },
     {
       "regex": "\\(default `(?:claude|gpt|grok|gemini|composer)-[^`]+`\\)",
-      "files": "/SKILL\\.md$",
-      "replacement": "(default in [Models](#models))",
-      "rationale": "same rule for a skill body, which carries its own Models section"
+      "replacement": "(pick it with the Model routing section of your CLAUDE.md, or AGENTS.md on Codex)",
+      "rationale": "the port names no model; a skill defers model choice to the user's Model routing"
     },
     {
       "pattern": ".cursor/skills/",
@@ -66,15 +59,19 @@
   "denylist": [
     {
       "token": "grok-",
-      "hint": "Cursor model slug; point at the Models section, or add a substitution rule for the phrase"
+      "hint": "Cursor model slug; defer to the Model routing section of the user's CLAUDE.md, or add a substitution rule for the phrase"
     },
     {
       "regex": "\\b(?:claude|gpt|gemini|composer)-[0-9a-z.-]*-(?:max|fast|xhigh|high|medium|low|thinking)\\b",
-      "hint": "Cursor model slug with an effort suffix; point at the Models section, or add a substitution rule for the phrase"
+      "hint": "Cursor model slug with an effort suffix; defer to the Model routing section of the user's CLAUDE.md, or add a substitution rule for the phrase"
     },
     {
       "token": "pstack-models.mdc",
-      "hint": "Cursor's rule file; the port's override sheet is pstack-models.md, at the path setup-pstack lists per runtime"
+      "hint": "Cursor's per-role model sheet; the port has none, so rewrite the sentence to defer to the Model routing section of the user's CLAUDE.md"
+    },
+    {
+      "token": "setup-pstack",
+      "hint": "the port removed /setup-pstack; rewrite the sentence to defer to the Model routing section of the user's CLAUDE.md"
     },
     {
       "token": "`verify` skill (UIs)",

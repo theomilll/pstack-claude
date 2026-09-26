@@ -15,7 +15,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { applySubstitutions, denylistHits, mergeFile, syncComponent } from "../tools/sync.mjs";
+import { applySubstitutions, denylistHits, isExcluded, mergeFile, syncComponent } from "../tools/sync.mjs";
 
 const RULES = JSON.parse(readFileSync(join(import.meta.dir, "../tools/substitutions.json"), "utf8"));
 
@@ -53,14 +53,13 @@ describe("applySubstitutions", () => {
     expect(text).toBe("Prefer AskUserQuestion here.");
   });
 
-  test("the override sheet path survives the generic .cursor/rules/ rule", () => {
+  test("upstream's per-role model sheet path is left for a human rewrite", () => {
     const { text } = applySubstitutions(
-      "Use `arena runners` from `~/.cursor/rules/pstack-models.mdc` when present. Rules in .cursor/rules/ apply.",
+      "Read `~/.cursor/rules/pstack-models.mdc` when present. Rules in .cursor/rules/ apply.",
       RULES.substitutions,
     );
-    expect(text).toBe(
-      "Use `arena runners` from `pstack-models.md` when present. Rules in CLAUDE.md imports apply.",
-    );
+    expect(text).toContain("Rules in CLAUDE.md imports apply.");
+    expect(denylistHits("how.md", text, RULES.denylist)).toHaveLength(1);
   });
 
   test("the driver-skill and model-default phrases rewrite as the port writes them", () => {
@@ -87,15 +86,18 @@ describe("applySubstitutions", () => {
     );
   });
 
-  test("a model default points at the Models section that owns the file, whatever the slug", () => {
-    const line = (slug) => `your configured hillclimb model (default \`${slug}\`)`;
-    for (const slug of ["grok-4.7-xhigh-fast", "claude-fable-5-1-thinking-max", "gpt-6-sol-max"]) {
-      expect(applySubstitutions(line(slug), RULES.substitutions, "skills/poteto-mode/playbooks/hillclimb.md").text).toBe(
-        "your configured hillclimb model (default in poteto-mode's Models section)",
-      );
-      expect(applySubstitutions(line(slug), RULES.substitutions, "skills/reflect/SKILL.md").text).toBe(
-        "your configured hillclimb model (default in [Models](#models))",
-      );
+  test("a model default defers to the user's Model routing, whatever the slug", () => {
+    const configured = (slug) => `a subagent using your configured bug-fix model (default \`${slug}\`) with`;
+    const bare = (slug) => `the judge (default \`${slug}\`) scores`;
+    for (const slug of ["grok-x-9-xhigh-fast", "claude-x-9-thinking-max", "gpt-x-9-max"]) {
+      for (const rel of ["skills/poteto-mode/playbooks/hillclimb.md", "skills/reflect/SKILL.md"]) {
+        expect(applySubstitutions(configured(slug), RULES.substitutions, rel).text).toBe(
+          "a subagent using a model picked with the Model routing section of your CLAUDE.md (AGENTS.md on Codex) with",
+        );
+        expect(applySubstitutions(bare(slug), RULES.substitutions, rel).text).toBe(
+          "the judge (pick it with the Model routing section of your CLAUDE.md, or AGENTS.md on Codex) scores",
+        );
+      }
     }
     expect(applySubstitutions("(default `true`)", RULES.substitutions, "skills/reflect/SKILL.md").text).toBe(
       "(default `true`)",
@@ -111,15 +113,24 @@ describe("applySubstitutions", () => {
 
 describe("denylistHits", () => {
   test("a Cursor model slug fails the scan", () => {
-    expect(denylistHits("playbook.md", "default `grok-4.8-fast`", RULES.denylist)).toHaveLength(1);
-    expect(denylistHits("playbook.md", "default `gpt-5.6-sol-max`", RULES.denylist)).toHaveLength(1);
-    expect(denylistHits("playbook.md", "default `gpt-6-sol-max`", RULES.denylist)).toHaveLength(1);
-    expect(denylistHits("arena.md", "one each on `claude-opus-5-5-max`", RULES.denylist)).toHaveLength(1);
+    expect(denylistHits("playbook.md", "default `grok-x-9-fast`", RULES.denylist)).toHaveLength(1);
+    expect(denylistHits("playbook.md", "default `gpt-x-9-max`", RULES.denylist)).toHaveLength(1);
+    expect(denylistHits("arena.md", "one each on `claude-x-9-max`", RULES.denylist)).toHaveLength(1);
     expect(denylistHits("how.md", "the role line in the `pstack-models.mdc` rule", RULES.denylist)).toHaveLength(1);
   });
 
-  test("a model name in an example is not a Cursor slug", () => {
-    expect(denylistHits("synthesizer.md", "we renamed `gpt-4` to `gpt-4o` in `encodingForModel`", RULES.denylist)).toEqual([]);
+  test("runtime names and made-up identifiers are not model names", () => {
+    const line = "install via claude-code or gemini-cli; we renamed `gpt-x9` in `encodingForModel`";
+    expect(denylistHits("synthesizer.md", line, RULES.denylist)).toEqual([]);
+  });
+
+  test("an upstream mention of the removed setup skill fails the scan", () => {
+    expect(denylistHits("how.md", "Run `/setup-pstack` to configure models.", RULES.denylist)).toHaveLength(1);
+  });
+
+  test("sync never restores the removed setup skill", () => {
+    const upstream = JSON.parse(readFileSync(join(import.meta.dir, "../tools/upstream.json"), "utf8"));
+    expect(isExcluded("skills/setup-pstack/SKILL.md", upstream.components.pstack.exclude)).toBe(true);
   });
 
   test("UI repair advice points to the canonical driver policy", () => {
@@ -639,8 +650,7 @@ describe("sync CLI", () => {
     for (const file of ["sync.mjs", "generate.mjs", "validate-skills.mjs", "substitutions.json"]) {
       cpSync(join(import.meta.dir, "../tools", file), join(port, "tools", file));
     }
-    cpSync(join(import.meta.dir, "../plugins/pstack/models.json"), join(port, "plugins/pstack/models.json"));
-    mkdirSync(join(port, "plugins/pstack/skills"));
+    mkdirSync(join(port, "plugins/pstack/skills"), { recursive: true });
     writeFileSync(join(port, "plugins/pstack/skills/s.md"), "one\n");
     writeFileSync(
       join(port, "tools/upstream.json"),

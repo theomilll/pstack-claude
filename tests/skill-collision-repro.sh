@@ -6,7 +6,7 @@
 # entry twice. 0.9.13 moved the trampolines to .codex-plugin/prompts/ and left
 # the Claude Code plugin with no commands/. That works only if a user-typed
 # /plugin:name still reaches the skill on its own; this script proves it with
-# one haiku call. If it fails, upstream changed slash resolution: re-read #22
+# one call on your default model. If it fails, upstream changed slash resolution: re-read #22
 # and CHANGES 0.9.13 before reintroducing commands/. Last verified on 2.1.245.
 #
 # The static layout invariants (no commands/, flag discipline, namespaced agent
@@ -31,7 +31,7 @@ Then stop. Do not invoke any skill or tool.
 EOF
 
 status=0
-out="$(claude -p --plugin-dir "$scratch" --model haiku --max-turns 3 '/testplug:foo' < /dev/null 2>&1)" || status=$?
+out="$(claude -p --plugin-dir "$scratch" --max-turns 3 '/testplug:foo' < /dev/null 2>&1)" || status=$?
 if [[ "$status" -eq 0 && "$out" == *SKILL-RAN* ]]; then
   printf '%s\n' "ok: user-typed /plugin:name reaches the skill with no commands/ present"
 else
